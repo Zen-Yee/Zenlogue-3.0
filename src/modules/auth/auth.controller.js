@@ -1,7 +1,7 @@
 import * as authService from "./auth.service.js";
 import jwt from 'jsonwebtoken';
 
-export const signupSubmit = async (req, res) => {
+export const signupSubmit = async (req, res, next) => {
   try {
     const { username, email, password, confirmPassword } = req.body;
 

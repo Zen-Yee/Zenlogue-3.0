@@ -2,12 +2,13 @@ import * as postService from "./post.service.js";
 import * as commentService from "./comment.service.js";
 
 
-export const allPost = async (req, res) => {
+export const allPost = async (req, res, next) => {
     try {
-        const posts = await postService.displayAllPost();
-        res.json(posts); // PostgreSQL
-    } catch (err) { 
-        next(err); 
+        const posts = await postService.displayAllPosts();
+        res.json(posts); 
+
+    } catch (err) {
+        next(err);
     }
 }
 

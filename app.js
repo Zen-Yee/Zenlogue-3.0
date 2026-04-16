@@ -3,8 +3,8 @@ import session from "express-session";
 import dotenv from "dotenv";
 
 import authRouter from './src/modules/auth/auth.routes.js';
-import postRouter from './src/modules/post/post.routes.js';
-import commentRouter from './src/modules/comment/comment.routes.js';
+// import postRouter from './src/modules/post/post.routes.js';
+// import commentRouter from './src/modules/comment/comment.routes.js';
 
 dotenv.config(); // loads environment variables from .env file
 const app = express(); 
@@ -25,7 +25,7 @@ app.use(express.urlencoded({ extended: true })); // Parses URL-encoded form data
 
 // Mounting routes
 app.use('/auth', authRouter); // Log in, Log out, Register
-app.use('/post', postRouter); // fetch posts
-app.use('/comment', commentRouter); // fetch comments
+// app.use('/post', postRouter); // fetch posts
+// app.use('/comment', commentRouter); // fetch comments
 
 export default app;

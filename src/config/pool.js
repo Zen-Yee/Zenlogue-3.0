@@ -1,6 +1,8 @@
 import pg from 'pg';
 const { Pool } = pg;
 
+console.log('ENV TEST:', process.env.DATABASE_URL)
+
 // Create a single connection pool instance
 const db = new Pool({
   connectionString: process.env.DATABASE_URL,

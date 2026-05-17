@@ -1,37 +1,42 @@
 import * as postService from "./post.service.js";
 import * as commentService from "./comment.service.js";
 
-
 export const allPost = async (req, res, next) => {
-    try {
-        const posts = await postService.displayAllPosts();
-        res.json(posts); 
+  try {
+    const posts = await postService.displayAllPosts();
+    res.status(200).json({
+      success: true,
+      data: posts,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
 
-    } catch (err) {
-        next(err);
+export const specificPost = async (req, res, next) => {
+  try {
+    const postId = req.params.id;
+    const posts = await postService.displayPost(postId);
+
+    // If it return an empty array when SELECT with the post_id, throw error:
+    if (!posts) {
+      const err = new Error("Post not found");
+      err.status = 404;
+      return next(err);
     }
-}
 
-export const specificPost = async (req, res) => {
-    try {
-        const postId = req.params.id;
-        const posts = await postService.displayPost(postId);
+    // fetch all comments for this post
+    const comments = await commentService.getCommentsByPost(postId);
 
-        // If it return an empty array when SELECT with the post_id, throw error:
-        if (!posts) {
-            const err = new Error("Post not found");
-            err.status = 404;
-            return next(err);
-        }
+    res.status(200).json({
+      success: true,
+      postData: posts,
+      commentsData: comments
+    });
 
-        // fetch all comments for this post
-        const comments = await commentService.getCommentsByPost(postId);
-
-        res.render('post.ejs', { posts, comments });
-
-    } catch (err) {
-        next(err);
-    }
+  } catch (err) {
+    next(err);
+  }
 };
 
 // export const createPost = async (req, res) => {

@@ -53,6 +53,7 @@ export const signupSubmit = async (req, res, next) => {
         role: user.role,
       },
     });
+    
   } catch (err) {
     next(err);
   }
@@ -100,7 +101,7 @@ export const logout = (req, res, next) => {
     sameSite: "strict",
   });
 
-  return res.status(200).json({
+ res.status(200).json({
     success: true,
     message: "Logout successful",
   });

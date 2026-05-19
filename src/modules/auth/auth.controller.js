@@ -37,11 +37,14 @@ export const signupSubmit = async (req, res, next) => {
       { expiresIn: "1h" },
     );
 
+    console.log();
+
     // Store token in cookie
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      maxAge: 60 * 60 * 1000,
+      maxAge: 60 * 60 * 1000,  
+      sameSite: "lax",
     });
 
     res.json({

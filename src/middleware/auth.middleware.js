@@ -14,6 +14,7 @@ export const authMiddleware = (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET); // verify JWT
     req.user = decoded; // attach decoded user to req.user
     next(); // continue to next middleware/route
+    
   } catch (err) {
     console.error("JWT verification failed:", err);
     // Token expired or invalid

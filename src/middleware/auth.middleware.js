@@ -16,9 +16,9 @@ export const authMiddleware = (req, res, next) => {
     next(); // continue to next middleware/route
     
   } catch (err) {
-    console.error("JWT verification failed:", err);
-    // Token expired or invalid
-    const error = new Error("Invalid or expired token");
+    const error = new Error(
+      err.name === "TokenExpiredError" ? "Token has expired" : "Invalid token"
+    );
     error.status = 401;
     return next(error);
   }

@@ -1,9 +1,14 @@
 import * as authService from "./auth.service.js";
 import jwt from "jsonwebtoken";
 
+const TOKEN_EXPIRY_MS = 60 * 60 * 1000;
+
 export const signupSubmit = async (req, res, next) => {
   try {
-    const { username, email, password, confirmPassword } = req.body;
+    const username = req.body.username?.trim();
+    const email = req.body.email?.trim().toLowerCase(); // lowercase email too
+
+    const { password, confirmPassword } = req.body;
 
     // Check if all required information exist, if not, return error
     if (!username || !email || !password || !confirmPassword) {
@@ -19,14 +24,6 @@ export const signupSubmit = async (req, res, next) => {
       return next(err);
     }
 
-    const existingUser = await authService.findByEmail(email);
-
-    if (existingUser) {
-      const err = new Error("Email already exists");
-      err.status = 409;
-      return next(err);
-    }
-
     // insert into database
     const user = await authService.createUser(username, email, password);
 
@@ -34,22 +31,23 @@ export const signupSubmit = async (req, res, next) => {
     const token = jwt.sign(
       { userId: user.user_id, role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: "1h" },
+      { expiresIn: TOKEN_EXPIRY_MS / 1000 },
     );
 
     // Store token in cookie
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      maxAge: 60 * 60 * 1000,
+      maxAge: TOKEN_EXPIRY_MS,
+      sameSite: "lax",
     });
 
-    res.json({
+    res.status(201).json({
       success: true,
       message: "Register Success",
       user: {
         id: user.user_id,
-        username: user.user_name,
+        username: user.username,
         role: user.role,
       },
     });
@@ -58,9 +56,16 @@ export const signupSubmit = async (req, res, next) => {
   }
 };
 
-export const loginSubmit = async (req, res) => {
+export const loginSubmit = async (req, res, next) => {
   try {
-    const { username, password } = req.body;
+    const username = req.body.username?.trim();
+    const { password } = req.body;
+
+    if (!username || !password) {
+      const err = new Error("All fields are required");
+      err.status = 400;
+      return next(err);
+    }
 
     // search username in database
     const user = await authService.loginUser(username, password);
@@ -69,17 +74,18 @@ export const loginSubmit = async (req, res) => {
     const token = jwt.sign(
       { userId: user.user_id, role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: "1h" },
+      { expiresIn: TOKEN_EXPIRY_MS / 1000 },
     );
 
     // Store token in cookie
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      maxAge: 60 * 60 * 1000,
+      maxAge: TOKEN_EXPIRY_MS,
+      sameSite: "lax",
     });
 
-    res.json({
+    res.status(200).json({
       success: true,
       message: "Login Success",
       user: {
@@ -94,14 +100,20 @@ export const loginSubmit = async (req, res) => {
 };
 
 export const logout = (req, res, next) => {
-  res.clearCookie("token", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
-  });
+  try {
 
-  return res.status(200).json({
-    success: true,
-    message: "Logout successful",
-  });
+    res.clearCookie("token", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Logout successful",
+    });
+  } catch (error) {
+    next(error); 
+  }
 };

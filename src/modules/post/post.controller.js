@@ -13,7 +13,7 @@ export const allPost = async (req, res, next) => {
   }
 };
 
-export const specificPost = async (req, res, next) => {
+export const onePost = async (req, res, next) => {
   try {
     const postId = req.params.id;
     const posts = await postService.displayPost(postId);
@@ -39,49 +39,48 @@ export const specificPost = async (req, res, next) => {
   }
 };
 
-// export const createPost = async (req, res) => {
-//   try {
-//     const { post_title, post_content } = req.body;
-//     const createPost = await postService.createPost(post_title, post_content, req.user.userId);
+export const createPost = async (req, res, next) => {
+  try {
+    const { title, content } = req.body;
+    const newPost = await postService.createPost(title, content, req.user.userId);
 
-//     res.redirect(`/post/${post.post_id}`, { createPost });
+    res.status(200).json({
+      success: true,
+      postData: newPost,
+      commentsData: []
+    });
 
-//   } catch (err) {
-//     next(err);
-//   }
-// };
+  } catch (err) {
+    next(err);
+  }
+};
 
-// export const editPostForm = async (req, res) => {
-//   try {
-//     const postId = req.params.id;
-//     const posts = await postService.displayPost(postId);
+export const updatePost = async (req, res, next) => {
+  try {
+    const postId = req.params.id;
+    const { title, content } = req.body;
+    const updatedPost = await postService.updatePost(postId, title, content);
 
-//     // If it return an empty array when SELECT with the post_id, throw error:
-//     if (!posts) {
-//       const err = new Error("Post not found");
-//       err.status = 404;
-//       return next(err);
-//     }
+    // If it return an empty array when SELECT with the post_id, throw error:
+    if (!updatedPost) {
+      const err = new Error("Post not found");
+      err.status = 404;
+      return next(err);
+    }
 
-//     res.render('edit-post.ejs', { posts });
+    // fetch all comments for this post
+    const comments = await commentService.getCommentsByPost(postId);
 
-//   } catch (err) {
-//     next(err);
-//   }
-// };
+    res.status(200).json({
+      success: true,
+      postData: updatedPost,
+      commentsData: comments
+    });
 
-// export const updatePost = async (req, res) => {
-//   try {
-//     const postId = req.params.id;
-//     const { post_title, post_content } = req.body;
-//     const posts = await postService.updatedPost(postId,post_title, post_content);
-
-//     res.redirect(`/post/${postId}`, { posts });
-
-//   } catch (err) {
-//     next(err);
-//   }
-// };
+  } catch (err) {
+    next(err);
+  }
+};
 
 // export const deletePost = async (req, res) => {
 //   try {
